@@ -2,7 +2,6 @@ const axios = require("axios");
 const { v4: uuidv4 } = require("uuid");
 
 async function translateText(inputText, targetLanguage) {
-  const apiKey = "afedfc29bc134ba3a3f578ef6fda0b71";
   const endpoint = "https://api.cognitive.microsofttranslator.com";
   let params = new URLSearchParams();
   params.append("api-version", "3.0");
