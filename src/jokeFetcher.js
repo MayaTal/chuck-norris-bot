@@ -26,7 +26,7 @@ async function fetchChuckNorrisJokes() {
       ).each((index, element) => {
         jokes.push($(element).text().trim());
       });
-      console.log(jokes);
+      // console.log(jokes);
       return jokes;
     })
     .catch((error) => {
