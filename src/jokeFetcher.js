@@ -19,14 +19,12 @@ async function fetchChuckNorrisJokes() {
     })
     .then((response) => {
       const $ = cheerio.load(response.data);
-      //   console.log(response);
       const jokes = [];
       $(
         "#phxdetail-1 > article > div > div.m-detail--contents.l-content-well > section > div.l-grid--content-body > div.m-detail--body > ol > li"
       ).each((index, element) => {
         jokes.push($(element).text().trim());
       });
-      // console.log(jokes);
       return jokes;
     })
     .catch((error) => {

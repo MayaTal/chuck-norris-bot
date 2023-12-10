@@ -7,7 +7,6 @@ require("dotenv").config();
 const TOKEN = process.env.TOKEN;
 const bot = new telegramBot(TOKEN, { polling: true });
 const userLanguagesCode = {};
-const userLanguageSet = {};
 
 function getLanguageCode(languageName) {
   const code = iso6391.getCode(languageName);
@@ -16,10 +15,8 @@ function getLanguageCode(languageName) {
 
 async function setLanguageAccordinginput(chatId, language) {
   if (language) {
-    userLanguageSet[chatId] = true;
     const languageCode = getLanguageCode(language);
     userLanguagesCode[chatId] = languageCode;
-    console.log(languageCode);
 
     try {
       const translatedNoProblem = await translateText(
@@ -28,7 +25,6 @@ async function setLanguageAccordinginput(chatId, language) {
       );
       bot.sendMessage(chatId, `${translatedNoProblem}`);
     } catch (error) {
-      console.error("Error translating text:", error.message);
       bot.sendMessage(chatId, "Please enter a valid language name");
     }
   } else {
@@ -45,11 +41,10 @@ async function handleJokeRequest(chatId, jokeNumber) {
       selectedJoke,
       userLanguagesCode[chatId]
     );
-
     bot.sendMessage(chatId, `${jokeNumber}.${translatedJoke}`);
   } else {
     const translatedError = await translateText(
-      "Please enter a valid joke number between 1 and " + jokes.length,
+      "Please enter a valid joke number between 1 and 101",
       userLanguagesCode[chatId]
     );
     bot.sendMessage(chatId, translatedError);
@@ -62,28 +57,18 @@ bot.on("message", async (message) => {
   if (message.text.toLowerCase().startsWith("set language")) {
     const [, , language] = message.text.split(" ");
     await setLanguageAccordinginput(chatId, language);
-    return;
-  }
-
-  if (userLanguageSet[chatId]) {
-    if (!isNaN(message.text)) {
-      const jokeNumber = parseInt(message.text);
-      handleJokeRequest(chatId, jokeNumber, userLanguagesCode[chatId]);
-    } else {
-      if (message.text.toLowerCase().startsWith("set ")) {
-        bot.sendMessage(
-          chatId,
-          "Please set your language using 'set language'"
-        );
-      } else {
-        const translatedError = await translateText(
-          "Please enter a number to get a Chuck Norris joke",
-          userLanguagesCode[chatId]
-        );
-        bot.sendMessage(chatId, translatedError);
-      }
-    }
+  } else if (!isNaN(message.text)) {
+    const jokeNumber = parseInt(message.text);
+    handleJokeRequest(chatId, jokeNumber, userLanguagesCode[chatId]);
   } else {
-    bot.sendMessage(chatId, "Please set your language using 'set language'");
+    if (message.text.toLowerCase().startsWith("set ")) {
+      bot.sendMessage(chatId, "Please set your language using 'set language'");
+    } else {
+      const translatedError = await translateText(
+        "Please enter a number to get a Chuck Norris joke",
+        userLanguagesCode[chatId]
+      );
+      bot.sendMessage(chatId, translatedError);
+    }
   }
 });
