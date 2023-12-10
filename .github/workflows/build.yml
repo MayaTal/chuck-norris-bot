@@ -1,0 +1,53 @@
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AZURE_FUNCTIONAPP_NAME: chuck-norris-bot # set this to your application's name
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: "https://chuck-norris-bot.azurewebsites.net" # set this to the path to your web app project, defaults to the repository root
+  NODE_VERSION: "18.17.1" # set this to the node version to use
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: npm install, build, and test
+        run: |
+          npm install
+          npm run build --if-present
+          npm run test --if-present
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v3
+        with:
+          name: node-app
+          path: .
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: "production"
+      url: ${{ steps.deploy-to-functionapp.outputs.functionapp-url }}
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v3
+        with:
+          name: node-app
+
+      - name: "Deploy to Azure functionapp"
+        id: deploy-to-functionapp
+        uses: azure/functionapps-deploy@85270a1854658d167ab239bce43949edb336fa7c
+        with:
+          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}

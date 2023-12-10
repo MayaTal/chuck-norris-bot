@@ -4,9 +4,14 @@ const { translateText } = require("./translator");
 const iso6391 = require("iso-639-1");
 require("dotenv").config();
 
-const TOKEN = process.env.TOKEN;
-const bot = new telegramBot(TOKEN, { polling: true });
+const BOT_TOKEN = process.env.BOT_TOKEN;
+const bot = new telegramBot(BOT_TOKEN, { polling: true });
 const userLanguagesCode = {};
+const ERRORS = {
+  INVALID_LANGUAGE: "Please enter a valid language name",
+  INVALID_COMMAND: "Please set your language using 'set language'",
+  INVALID_JOKE_NUMBER: "Please enter a valid joke number between 1 and 101",
+};
 
 function getLanguageCode(languageName) {
   const code = iso6391.getCode(languageName);
@@ -21,7 +26,7 @@ async function setLanguageAccordinginput(chatId, language) {
     const translatedNoProblem = await translateText("no problem", languageCode);
     bot.sendMessage(chatId, `${translatedNoProblem}`);
   } catch (error) {
-    bot.sendMessage(chatId, "Please enter a valid language name");
+    bot.sendMessage(chatId, ERRORS.INVALID_LANGUAGE);
   }
 }
 
@@ -30,7 +35,7 @@ async function handleJokeRequest(chatId, jokeNumber) {
 
   if (jokeNumber < 1 || jokeNumber > 101) {
     const translatedError = await translateText(
-      "Please enter a valid joke number between 1 and 101",
+      ERRORS.INVALID_JOKE_NUMBER,
       userLanguagesCode[chatId]
     );
     bot.sendMessage(chatId, translatedError);
@@ -50,7 +55,7 @@ bot.on("message", async (message) => {
     if (message.text.toLowerCase().startsWith("set language")) {
       const [, , language] = message.text.split(" ");
       if (!language) {
-        throw new Error("Please set your language using 'set language'");
+        throw new Error(ERRORS.INVALID_COMMAND);
       }
       await setLanguageAccordinginput(chatId, language);
     } else if (!isNaN(message.text)) {
@@ -58,10 +63,10 @@ bot.on("message", async (message) => {
       handleJokeRequest(chatId, jokeNumber, userLanguagesCode[chatId]);
     } else {
       if (message.text.toLowerCase().startsWith("set ")) {
-        throw new Error("Please set your language using 'set language'");
+        throw new Error(ERRORS.INVALID_COMMAND);
       } else {
         const translatedError = await translateText(
-          "Please enter a valid joke number between 1 and 101",
+          ERRORS.INVALID_JOKE_NUMBER,
           userLanguagesCode[chatId]
         );
         throw new Error(translatedError);
