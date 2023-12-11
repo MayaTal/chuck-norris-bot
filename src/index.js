@@ -6,19 +6,19 @@ const iso6391 = require("iso-639-1");
 require("dotenv").config();
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
-const FUNCTION_ENDPOINT = "https://chuck-norris-bot.azurewebsites.net";
-async function setWebhook() {
-  const response = await axios.post(
-    `https://api.telegram.org/bot${BOT_TOKEN}/setWebhook`,
-    {
-      url: FUNCTION_ENDPOINT,
-    }
-  );
+const WEBHOOK_ADDRESS = "https://chuck-norris-bot.azurewebsites.net";
+// async function setWebhook() {
+//   const response = await axios.post(
+//     `https://api.telegram.org/bot${BOT_TOKEN}/setWebhook`,
+//     {
+//       url: WEBHOOK_ADDRESS,
+//     }
+//   );
 
-  console.log(response.data);
-}
+//   console.log(response.data);
+// }
 
-setWebhook();
+// setWebhook();
 const bot = new telegramBot(BOT_TOKEN, { polling: true });
 const userLanguagesCode = {};
 const ERRORS = {
@@ -32,7 +32,7 @@ function getLanguageCode(languageName) {
   return code || null;
 }
 
-async function setLanguageAccordinginput(chatId, language) {
+async function handleSetLanguageInput(chatId, language) {
   const languageCode = getLanguageCode(language);
   userLanguagesCode[chatId] = languageCode;
 
@@ -40,41 +40,43 @@ async function setLanguageAccordinginput(chatId, language) {
     const translatedNoProblem = await translateText("no problem", languageCode);
     bot.sendMessage(chatId, `${translatedNoProblem}`);
   } catch (error) {
-    bot.sendMessage(chatId, ERRORS.INVALID_LANGUAGE);
+    throw new Error(ERRORS.INVALID_LANGUAGE);
   }
 }
 
 async function handleJokeRequest(chatId, jokeNumber) {
   const jokes = await fetchChuckNorrisJokes();
-
   if (jokeNumber < 1 || jokeNumber > 101) {
     const translatedError = await translateText(
       ERRORS.INVALID_JOKE_NUMBER,
       userLanguagesCode[chatId]
     );
-    bot.sendMessage(chatId, translatedError);
-  } else {
-    const selectedJoke = jokes[jokeNumber - 1];
-    const translatedJoke = await translateText(
-      selectedJoke,
-      userLanguagesCode[chatId]
-    );
-    bot.sendMessage(chatId, `${jokeNumber}.${translatedJoke}`);
+    throw new Error(translatedError);
   }
+  const selectedJoke = jokes[jokeNumber - 1];
+  const translatedJoke = await translateText(
+    selectedJoke,
+    userLanguagesCode[chatId]
+  );
+  bot.sendMessage(chatId, `${jokeNumber}.${translatedJoke}`);
 }
+
+const isNumber = (userInput) => !isNaN(userInput);
+const isMessageStartsWithSetLanguage = (userInput) =>
+  userInput.toLowerCase().startsWith("set language");
 
 bot.on("message", async (message) => {
   let chatId = message.from.id;
   try {
-    if (message.text.toLowerCase().startsWith("set language")) {
+    if (isMessageStartsWithSetLanguage(message.text)) {
       const [, , language] = message.text.split(" ");
       if (!language) {
         throw new Error(ERRORS.INVALID_COMMAND);
       }
-      await setLanguageAccordinginput(chatId, language);
-    } else if (!isNaN(message.text)) {
+      await handleSetLanguageInput(chatId, language);
+    } else if (isNumber(message.text)) {
       const jokeNumber = parseInt(message.text);
-      handleJokeRequest(chatId, jokeNumber, userLanguagesCode[chatId]);
+      await handleJokeRequest(chatId, jokeNumber, userLanguagesCode[chatId]);
     } else {
       if (message.text.toLowerCase().startsWith("set ")) {
         throw new Error(ERRORS.INVALID_COMMAND);
