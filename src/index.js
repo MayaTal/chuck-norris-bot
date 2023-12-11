@@ -5,6 +5,19 @@ const iso6391 = require("iso-639-1");
 require("dotenv").config();
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
+const FUNCTION_ENDPOINT = "https://chuck-norris-bot.azurewebsites.net";
+async function setWebhook() {
+  const response = await axios.post(
+    `https://api.telegram.org/bot${BOT_TOKEN}/setWebhook`,
+    {
+      url: FUNCTION_ENDPOINT,
+    }
+  );
+
+  console.log(response.data);
+}
+
+setWebhook();
 const bot = new telegramBot(BOT_TOKEN, { polling: true });
 const userLanguagesCode = {};
 const ERRORS = {
