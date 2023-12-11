@@ -1,6 +1,7 @@
 const telegramBot = require("node-telegram-bot-api");
 const { fetchChuckNorrisJokes } = require("./jokeFetcher");
 const { translateText } = require("./translator");
+const axios = require("axios");
 const iso6391 = require("iso-639-1");
 require("dotenv").config();
 
