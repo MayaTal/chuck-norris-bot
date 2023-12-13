@@ -6,7 +6,6 @@ const iso6391 = require("iso-639-1");
 require("dotenv").config();
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
-const WEBHOOK_ADDRESS = "https://chuck-norris-bot.azurewebsites.net";
 const bot = new telegramBot(BOT_TOKEN, { polling: true });
 const ERRORS = {
   INVALID_LANGUAGE: "Please enter a valid language name",
