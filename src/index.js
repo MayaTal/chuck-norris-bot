@@ -14,6 +14,16 @@ const ERRORS = {
 };
 const userLanguagesCode = {};
 
+bot.onText(/\/start/, (message) => {
+  const chatId = message.chat.id;
+
+  // You can send a custom message or perform any other actions
+  bot.sendMessage(
+    chatId,
+    "Welcome to Chuck Norris bot, to start please choose a language using 'set language'."
+  );
+});
+
 function getLanguageCode(languageName) {
   const code = iso6391.getCode(languageName);
   return code || null;
