@@ -8,7 +8,7 @@ require("dotenv").config();
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const bot = new telegramBot(BOT_TOKEN, { polling: true });
 const ERRORS = {
-  INVALID_LANGUAGE: "Please enter a valid llllll name",
+  INVALID_LANGUAGE: "Please enter a valid language name",
   INVALID_COMMAND: "Please set your language using 'set language'",
   INVALID_JOKE_NUMBER: "Please enter a valid joke number between 1 and 101",
 };
