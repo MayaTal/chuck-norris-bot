@@ -14,15 +14,6 @@ const ERRORS = {
 };
 const userLanguagesCode = {};
 
-bot.onText(/\/start/, (message) => {
-  const chatId = message.chat.id;
-
-  bot.sendMessage(
-    chatId,
-    "Welcome to Chuck Norris bot, to start please choose a language using 'set language'."
-  );
-});
-
 function getLanguageCode(languageName) {
   const code = iso6391.getCode(languageName);
   return code || null;
@@ -63,6 +54,13 @@ const isMessageStartsWithSetLanguage = (userInput) =>
 
 bot.on("message", async (message) => {
   let chatId = message.from.id;
+  if (message.text.toLowerCase() === "/start") {
+    bot.sendMessage(
+      chatId,
+      "Welcome to Chuck Norris bot, to start please choose a language using 'set language'."
+    );
+    return;
+  }
   try {
     if (isMessageStartsWithSetLanguage(message.text)) {
       const [, , language] = message.text.split(" ");
