@@ -17,7 +17,6 @@ const userLanguagesCode = {};
 bot.onText(/\/start/, (message) => {
   const chatId = message.chat.id;
 
-  // You can send a custom message or perform any other actions
   bot.sendMessage(
     chatId,
     "Welcome to Chuck Norris bot, to start please choose a language using 'set language'."
